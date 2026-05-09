@@ -1,0 +1,63 @@
+# Top-most EditorConfig file — stop walking up the tree looking for more
+root = true
+
+# ===== Universal defaults =====
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# ===== C# =====
+[*.cs]
+indent_size = 4
+
+# Modern C# language conventions
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_using_directive_placement = outside_namespace:warning
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+# Brace and layout style (Allman — the .NET standard)
+csharp_new_line_before_open_brace = all
+csharp_prefer_braces = true:warning
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+
+# Type and qualification preferences
+dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
+dotnet_style_predefined_type_for_member_access = true:suggestion
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+dotnet_style_qualification_for_event = false:suggestion
+
+# ===== .NET project / config files =====
+[*.{csproj,props,targets,xml,config}]
+indent_size = 2
+
+# ===== JSON / YAML =====
+[*.{json,json5,yml,yaml}]
+indent_size = 2
+
+# ===== Web / TypeScript / frontend =====
+[*.{js,jsx,ts,tsx,mjs,cjs,css,scss,html}]
+indent_size = 2
+
+# ===== Markdown =====
+[*.md]
+indent_size = 2
+trim_trailing_whitespace = false
+
+# ===== Shell / PowerShell =====
+[*.sh]
+indent_size = 2
+
+[*.ps1]
+indent_size = 4
+
+# ===== Makefiles (must use tabs) =====
+[Makefile]
+indent_style = tab
