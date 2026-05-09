@@ -1,0 +1,51 @@
+# ===== .NET build outputs =====
+bin/
+obj/
+
+# ===== IDE folders / per-user files =====
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+# ===== VS Code: ignore most, keep shared configs =====
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# ===== Test results / coverage =====
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+*.trx
+
+# ===== Frontend (Vite + Node) =====
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+# ===== Logs =====
+*.log
+logs/
+
+# ===== Local config & secrets =====
+*.env
+*.env.local
+appsettings.Local.json
+appsettings.*.Local.json
+
+# ===== OS junk =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Misc tool caches =====
+.tools/
+artifacts/
