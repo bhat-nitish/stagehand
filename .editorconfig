@@ -34,6 +34,20 @@ dotnet_style_qualification_for_property = false:suggestion
 dotnet_style_qualification_for_method = false:suggestion
 dotnet_style_qualification_for_event = false:suggestion
 
+# Analyzer rule overrides
+# CA1716: identifier conflicts with a keyword in another .NET language (VB.NET / F#).
+# We're C#-only and the canonical Result-pattern uses `Error`. No interop concern.
+dotnet_diagnostic.CA1716.severity = none
+
+# ===== EF Core generated migrations =====
+# The migration scaffolder emits block-scoped namespaces and doesn't tag files
+# as auto-generated. Relax the style rules here so hand-written code stays strict
+# but generated files don't break the build.
+[**/Persistence/Migrations/*.cs]
+csharp_style_namespace_declarations = block_scoped:none
+dotnet_diagnostic.IDE0161.severity = none
+dotnet_diagnostic.IDE0005.severity = none
+
 # ===== .NET project / config files =====
 [*.{csproj,props,targets,xml,config}]
 indent_size = 2

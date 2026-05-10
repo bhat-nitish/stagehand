@@ -1,3 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Stagehand.Catalog.Application\Stagehand.Catalog.Application.csproj" />
+    <ProjectReference Include="..\Stagehand.Catalog.Infrastructure\Stagehand.Catalog.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\..\tools\ServiceDefaults\Stagehand.ServiceDefaults\Stagehand.ServiceDefaults.csproj" />
+  </ItemGroup>
+
 </Project>
