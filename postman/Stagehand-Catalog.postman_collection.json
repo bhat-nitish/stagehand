@@ -1,0 +1,64 @@
+{
+  "info": {
+    "name": "Stagehand - Catalog",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Listing",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+              "const id = pm.response.json().id;",
+              "pm.environment.set('listingId', id);",
+              "pm.test('Returned an id', () => pm.expect(id).to.be.a('string').and.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{catalogUrl}}/v1/listings",
+          "host": ["{{catalogUrl}}"],
+          "path": ["v1", "listings"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Hamilton\",\n  \"description\": \"Broadway musical\",\n  \"startsAt\": \"2026-12-01T20:00:00Z\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Get Listing By Id",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('Id matches created listing', () => pm.expect(pm.response.json().id).to.eql(pm.environment.get('listingId')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{catalogUrl}}/v1/listings/{{listingId}}",
+          "host": ["{{catalogUrl}}"],
+          "path": ["v1", "listings", "{{listingId}}"]
+        }
+      }
+    }
+  ]
+}
