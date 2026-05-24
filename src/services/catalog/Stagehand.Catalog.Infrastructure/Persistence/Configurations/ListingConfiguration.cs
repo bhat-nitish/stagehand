@@ -12,6 +12,8 @@ internal sealed class ListingConfiguration : IEntityTypeConfiguration<Listing>
 
         builder.HasKey(l => l.Id);
 
+        builder.Property<uint>("xmin").IsRowVersion();
+
         builder.Property(l => l.Id)
             .HasConversion(id => id.Value, value => new ListingId(value))
             .ValueGeneratedNever();

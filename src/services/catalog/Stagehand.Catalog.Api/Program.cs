@@ -1,5 +1,6 @@
+using Asp.Versioning;
 using Microsoft.EntityFrameworkCore;
-using Stagehand.Catalog.Api.Endpoints;
+using Stagehand.Catalog.Api;
 using Stagehand.Catalog.Api.Infrastructure;
 using Stagehand.Catalog.Application;
 using Stagehand.Catalog.Infrastructure;
@@ -16,6 +17,17 @@ builder.Services.AddCatalogInfrastructure(builder.Configuration);
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+builder.Services
+    .AddApiVersioning(options =>
+    {
+        options.DefaultApiVersion = ApiVersions.V1;
+        options.AssumeDefaultVersionWhenUnspecified = true;
+        options.ReportApiVersions = true;
+        options.ApiVersionReader = new UrlSegmentApiVersionReader();
+    });
+
+builder.Services.AddEndpointModules(typeof(Program).Assembly);
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -28,6 +40,6 @@ if (app.Environment.IsDevelopment())
 app.UseExceptionHandler();
 
 app.MapDefaultEndpoints();
-app.MapListingEndpoints();
+app.MapEndpointModules();
 
 app.Run();
