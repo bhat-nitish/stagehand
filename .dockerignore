@@ -1,0 +1,25 @@
+# Build artifacts
+**/bin/
+**/obj/
+**/out/
+
+# Version control
+.git/
+.gitattributes
+
+# IDE / editor
+.vs/
+.vscode/
+.idea/
+**/*.user
+
+# Docker
+**/Dockerfile
+**/.dockerignore
+
+# Dev / test artifacts
+postman/
+**/TestResults/
+
+# OS
+**/.DS_Store

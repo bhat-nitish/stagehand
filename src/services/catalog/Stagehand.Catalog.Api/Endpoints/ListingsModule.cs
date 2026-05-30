@@ -46,10 +46,11 @@ internal sealed class ListingsModule : IEndpointModule
         Results.Ok(new { version = "2.0", message = "Catalog v2 is alive." });
 
     private static async Task<IResult> CreateAsync(
-        CreateListingCommand command,
+        CreateListingRequest request,
         IMediator mediator,
         CancellationToken cancellationToken)
     {
+        var command = new CreateListingCommand(request.Title, request.Description, request.StartsAt);
         var result = await mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
