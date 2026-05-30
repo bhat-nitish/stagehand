@@ -30,11 +30,22 @@ builder.Services.AddEndpointModules(typeof(Program).Assembly);
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+async Task ApplyMigrationsAsync()
 {
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
     await dbContext.Database.MigrateAsync();
+}
+
+if (args.Length > 0 && args[0] == "migrate")
+{
+    await ApplyMigrationsAsync();
+    return;
+}
+
+if (app.Environment.IsDevelopment())
+{
+    await ApplyMigrationsAsync();
 }
 
 app.UseExceptionHandler();
