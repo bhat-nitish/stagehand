@@ -1,0 +1,23 @@
+replicaCount: 1
+
+image:
+  repository: stagehand-catalog
+  tag: dev
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+database:
+  secretName: catalog-db-app
+
+env:
+  aspnetcoreEnvironment: Production
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 192Mi
+  limits:
+    memory: 512Mi
