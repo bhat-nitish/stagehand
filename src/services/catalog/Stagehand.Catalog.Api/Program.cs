@@ -6,6 +6,7 @@ using Stagehand.Catalog.Application;
 using Stagehand.Catalog.Infrastructure;
 using Stagehand.Catalog.Infrastructure.Persistence;
 using Stagehand.ServiceDefaults;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,20 @@ builder.Services.AddCatalogInfrastructure(builder.Configuration);
 
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddProblemDetails();
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = builder.Configuration["Keycloak:Authority"];
+        options.RequireHttpsMetadata =
+            builder.Configuration.GetValue("Keycloak:RequireHttpsMetadata", true);   // secure by default
+        options.TokenValidationParameters.ValidIssuers =
+            builder.Configuration.GetSection("Keycloak:ValidIssuers").Get<string[]>();
+        options.TokenValidationParameters.ValidateAudience = false;
+    });
+
+builder.Services.AddAuthorization();
 
 builder.Services
     .AddApiVersioning(options =>
@@ -49,6 +64,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseExceptionHandler();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapDefaultEndpoints();
 app.MapEndpointModules();

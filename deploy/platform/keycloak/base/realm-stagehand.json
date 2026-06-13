@@ -1,0 +1,16 @@
+{
+  "realm": "stagehand",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "catalog-client",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "dev-catalog-secret",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false
+    }
+  ]
+}

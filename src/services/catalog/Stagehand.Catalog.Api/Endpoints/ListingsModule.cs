@@ -22,7 +22,7 @@ internal sealed class ListingsModule : IEndpointModule
 
         var group = app.MapGroup("/v{version:apiVersion}/listings")
             .WithApiVersionSet(versions)
-            .WithTags("Listings");
+            .WithTags("Listings").RequireAuthorization();
 
         group.MapPost("/", CreateAsync)
             .HasApiVersion(ApiVersions.V1)
@@ -39,7 +39,7 @@ internal sealed class ListingsModule : IEndpointModule
             .HasApiVersion(ApiVersions.V1);
 
         group.MapGet("/ping", Ping)
-            .HasApiVersion(ApiVersions.V2);
+            .HasApiVersion(ApiVersions.V2).AllowAnonymous();
     }
 
     private static IResult Ping() =>

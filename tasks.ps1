@@ -4,6 +4,7 @@ function createcluster {
 
 function startcluster {
     k3d cluster start stagehand
+    kubectl config use-context k3d-stagehand
 }
 
 function stopcluster {
@@ -32,4 +33,13 @@ function applydb {
             kubectl apply -k $dev
         }
     }
+}
+
+function applykeycloak {
+    kubectl apply -k (Join-Path $PSScriptRoot 'deploy\platform\keycloak\overlays\dev')
+}
+
+function pfkeycloak {
+    # Blocking: admin console at http://localhost:8081 (local 8081 -> keycloak 8080).
+    kubectl port-forward svc/keycloak -n identity 8081:8080
 }
