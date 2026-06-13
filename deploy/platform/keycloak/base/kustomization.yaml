@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: identity
+
+resources:
+  - namespace.yaml
+  - deployment.yaml
+  - service.yaml
+
+# Bundle the realm JSON as a ConfigMap that the Deployment mounts and imports.
+# Stable name (no hash suffix) so the volume reference matches directly.
+configMapGenerator:
+  - name: keycloak-realm-import
+    files:
+      - realm-stagehand.json
+
+generatorOptions:
+  disableNameSuffixHash: true

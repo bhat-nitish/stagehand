@@ -12,6 +12,17 @@ service:
 database:
   secretName: catalog-db-app
 
+keycloak:
+  # In-cluster realm URL the API uses to fetch OIDC metadata + JWKS.
+  authority: http://keycloak.identity.svc.cluster.local:8080/realms/stagehand
+  # Dev only: Keycloak is HTTP. Prod sets true (HTTPS).
+  requireHttpsMetadata: false
+  # Accept tokens minted via the in-cluster URL OR your localhost port-forward.
+  # Prod collapses to the single real issuer.
+  validIssuers:
+    - http://keycloak.identity.svc.cluster.local:8080/realms/stagehand
+    - http://localhost:8081/realms/stagehand
+
 env:
   aspnetcoreEnvironment: Production
 
