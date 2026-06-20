@@ -1,3 +1,7 @@
+function upaspire {
+    dotnet run --project (Join-Path $PSScriptRoot 'tools\AppHost\Stagehand.AppHost')
+}
+
 function createcluster {
     k3d cluster create stagehand --servers 1 --agents 1 --api-port 127.0.0.1:6445
 }

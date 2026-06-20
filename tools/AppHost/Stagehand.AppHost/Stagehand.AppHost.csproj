@@ -14,7 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\services\catalog\Stagehand.Catalog.Api\Stagehand.Catalog.Api.csproj" />
+    <ProjectReference
+      Include="..\..\..\src\services\catalog\Stagehand.Catalog.Api\Stagehand.Catalog.Api.csproj" />
+    <ProjectReference
+      Include="..\..\..\src\platform\gateway\Stagehand.Gateway\Stagehand.Gateway.csproj" />
   </ItemGroup>
 
 </Project>

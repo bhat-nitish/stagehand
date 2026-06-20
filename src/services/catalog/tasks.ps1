@@ -2,11 +2,6 @@ function buildcatalog {
     dotnet build (Join-Path $PSScriptRoot 'Stagehand.Catalog.Api')
 }
 
-function runcatalog {
-    $repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
-    dotnet run --project (Join-Path $repo 'tools\AppHost\Stagehand.AppHost')
-}
-
 function dbuildcatalog {
     $repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
     docker build `

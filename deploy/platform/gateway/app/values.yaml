@@ -1,0 +1,20 @@
+replicaCount: 1
+
+image:
+  repository: stagehand-gateway
+  tag: dev
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+env:
+  aspnetcoreEnvironment: Production
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    memory: 256Mi
