@@ -18,6 +18,10 @@
     <Project Path="src/building-blocks/Stagehand.SharedKernel.Application/Stagehand.SharedKernel.Application.csproj" />
     <Project Path="src/building-blocks/Stagehand.SharedKernel/Stagehand.SharedKernel.csproj" />
   </Folder>
+  <Folder Name="/src/platform/" />
+  <Folder Name="/src/platform/gateway/">
+    <Project Path="src/platform/gateway/Stagehand.Gateway/Stagehand.Gateway.csproj" />
+  </Folder>
   <Folder Name="/src/services/" />
   <Folder Name="/src/services/catalog/">
     <Project Path="src/services/catalog/Stagehand.Catalog.Api/Stagehand.Catalog.Api.csproj" />
