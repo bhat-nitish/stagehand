@@ -26,6 +26,12 @@ keycloak:
 env:
   aspnetcoreEnvironment: Production
 
+networkPolicy:
+  # Restrict inbound to Catalog: only the gateway pod may reach it.
+  enabled: true
+  gatewayNamespace: gateway
+  gatewayName: gateway
+
 resources:
   requests:
     cpu: 100m

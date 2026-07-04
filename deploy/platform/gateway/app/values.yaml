@@ -12,9 +12,22 @@ service:
 env:
   aspnetcoreEnvironment: Production
 
+keycloak:
+  authority: http://keycloak.identity.svc.cluster.local:8080/realms/stagehand
+  requireHttpsMetadata: false
+  validIssuers:
+    - http://keycloak.identity.svc.cluster.local:8080/realms/stagehand
+    - http://localhost:8081/realms/stagehand
+
 resources:
   requests:
     cpu: 100m
     memory: 128Mi
   limits:
     memory: 256Mi
+
+ingress:
+  enabled: true
+  className: traefik
+  path: /
+  pathType: Prefix

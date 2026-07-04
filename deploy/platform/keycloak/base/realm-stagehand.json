@@ -1,6 +1,20 @@
 {
   "realm": "stagehand",
   "enabled": true,
+  "clientScopes": [
+    {
+      "name": "catalog:read",
+      "description": "Read access to Catalog",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" }
+    },
+    {
+      "name": "catalog:write",
+      "description": "Write access to Catalog",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" }
+    }
+  ],
   "clients": [
     {
       "clientId": "catalog-client",
@@ -10,7 +24,8 @@
       "secret": "dev-catalog-secret",
       "serviceAccountsEnabled": true,
       "standardFlowEnabled": false,
-      "directAccessGrantsEnabled": false
+      "directAccessGrantsEnabled": false,
+      "optionalClientScopes": [ "catalog:read", "catalog:write" ]
     }
   ]
 }

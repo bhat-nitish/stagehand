@@ -30,7 +30,9 @@ builder.Services
         options.TokenValidationParameters.ValidateAudience = false;
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorizationBuilder()
+    .AddScopePolicy("catalog:read")
+    .AddScopePolicy("catalog:write");
 
 builder.Services
     .AddApiVersioning(options =>
