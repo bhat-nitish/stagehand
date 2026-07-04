@@ -26,17 +26,21 @@ internal sealed class ListingsModule : IEndpointModule
 
         group.MapPost("/", CreateAsync)
             .HasApiVersion(ApiVersions.V1)
-            .AddEndpointFilter<IdempotencyEndpointFilter>();
+            .AddEndpointFilter<IdempotencyEndpointFilter>()
+            .RequireAuthorization("catalog:write");
 
         group.MapGet("/", SearchAsync)
-            .HasApiVersion(ApiVersions.V1);
+            .HasApiVersion(ApiVersions.V1)
+            .RequireAuthorization("catalog:read");
 
         group.MapGet("/{id:guid}", GetByIdAsync)
             .HasApiVersion(ApiVersions.V1)
-            .WithName(nameof(GetByIdAsync));
+            .WithName(nameof(GetByIdAsync))
+            .RequireAuthorization("catalog:read");
 
         group.MapPost("/{id:guid}/cancel", CancelAsync)
-            .HasApiVersion(ApiVersions.V1);
+            .HasApiVersion(ApiVersions.V1)
+            .RequireAuthorization("catalog:write");
 
         group.MapGet("/ping", Ping)
             .HasApiVersion(ApiVersions.V2).AllowAnonymous();
