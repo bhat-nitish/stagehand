@@ -41,6 +41,13 @@ logs/
 appsettings.Local.json
 appsettings.*.Local.json
 
+# ===== Postman =====
+# Commit the collection + the value-less env template only. A real environment
+# export (real URLs / any pasted tokens) must never be committed — those live
+# only in your local Postman "current value" column.
+postman/*.postman_environment.json
+!postman/Stagehand.postman_environment.json
+
 # ===== OS junk =====
 .DS_Store
 Thumbs.db

@@ -1,0 +1,40 @@
+replicaCount: 1
+
+image:
+  repository: stagehand-inventory
+  tag: dev
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+database:
+  secretName: inventory-db-app
+
+keycloak:
+  # In-cluster realm URL the API uses to fetch OIDC metadata + JWKS.
+  authority: http://keycloak.identity.svc.cluster.local:8080/realms/stagehand
+  # Dev only: Keycloak is HTTP. Prod sets true (HTTPS).
+  requireHttpsMetadata: false
+  # Accept tokens minted via the in-cluster URL OR your localhost port-forward.
+  # Prod collapses to the single real issuer.
+  validIssuers:
+    - http://keycloak.identity.svc.cluster.local:8080/realms/stagehand
+    - http://localhost:8081/realms/stagehand
+
+env:
+  aspnetcoreEnvironment: Production
+
+networkPolicy:
+  # Restrict inbound to Inventory: only the gateway pod may reach it.
+  enabled: true
+  gatewayNamespace: gateway
+  gatewayName: gateway
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 192Mi
+  limits:
+    memory: 512Mi
