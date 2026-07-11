@@ -29,4 +29,10 @@
     <Project Path="src/services/catalog/Stagehand.Catalog.Domain/Stagehand.Catalog.Domain.csproj" />
     <Project Path="src/services/catalog/Stagehand.Catalog.Infrastructure/Stagehand.Catalog.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/services/inventory/">
+    <Project Path="src/services/inventory/Stagehand.Inventory.Api/Stagehand.Inventory.Api.csproj" />
+    <Project Path="src/services/inventory/Stagehand.Inventory.Application/Stagehand.Inventory.Application.csproj" />
+    <Project Path="src/services/inventory/Stagehand.Inventory.Domain/Stagehand.Inventory.Domain.csproj" />
+    <Project Path="src/services/inventory/Stagehand.Inventory.Infrastructure/Stagehand.Inventory.Infrastructure.csproj" />
+  </Folder>
 </Solution>

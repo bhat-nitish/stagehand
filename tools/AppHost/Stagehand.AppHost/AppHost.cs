@@ -12,16 +12,26 @@ var keycloak = builder.AddContainer("keycloak", "quay.io/keycloak/keycloak", "26
 .WithBindMount("../../../deploy/platform/keycloak/base", "/opt/keycloak/data/import");
 
 var catalogDb = postgres.AddDatabase("catalog");
+var inventoryDb = postgres.AddDatabase("inventory");
 
 var catalogApi = builder.AddProject<Projects.Stagehand_Catalog_Api>("catalog-api")
     .WithReference(catalogDb)
     .WaitFor(catalogDb)
     .WaitFor(keycloak);
 
+var inventoryApi = builder.AddProject<Projects.Stagehand_Inventory_Api>("inventory-api")
+    .WithReference(inventoryDb)
+    .WaitFor(inventoryDb)
+    .WaitFor(keycloak);
+
 builder.AddProject<Projects.Stagehand_Gateway>("gateway")
 .WithEnvironment(
     "ReverseProxy__Clusters__catalog-cluster__Destinations__catalog__Address",
     catalogApi.GetEndpoint("http"))
-.WaitFor(catalogApi);
+.WithEnvironment(
+    "ReverseProxy__Clusters__inventory-cluster__Destinations__inventory__Address",
+    inventoryApi.GetEndpoint("http"))
+.WaitFor(catalogApi)
+.WaitFor(inventoryApi);
 
 builder.Build().Run();

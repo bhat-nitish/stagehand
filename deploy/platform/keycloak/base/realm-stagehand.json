@@ -13,6 +13,18 @@
       "description": "Write access to Catalog",
       "protocol": "openid-connect",
       "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" }
+    },
+    {
+      "name": "inventory:read",
+      "description": "Read access to Inventory",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" }
+    },
+    {
+      "name": "inventory:write",
+      "description": "Write access to Inventory",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" }
     }
   ],
   "clients": [
@@ -26,6 +38,17 @@
       "standardFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "optionalClientScopes": [ "catalog:read", "catalog:write" ]
+    },
+    {
+      "clientId": "inventory-client",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "dev-inventory-secret",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "optionalClientScopes": [ "inventory:read", "inventory:write" ]
     }
   ]
 }

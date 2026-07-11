@@ -1,0 +1,750 @@
+{
+	"info": {
+		"_postman_id": "97d06478-3049-4e78-9462-edda2b6939ee",
+		"name": "StageHand",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Catalog",
+			"item": [
+				{
+					"name": "CreateListing",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set('idempotencyKey', pm.variables.replaceIn('{{$guid}}'));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotencyKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{catalogAccessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Hamilton 10\",\n  \"description\": \"Broadway musical\",\n  \"startsAt\": \"2026-12-15T20:00:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/listings",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"listings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetListings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{catalogAccessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/listings/",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"listings",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CancelListing",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{catalogAccessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Venue closed\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/listings//cancel",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"listings",
+								"",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SearchListings",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{catalogAccessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/listings?pageSize=2",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"listings"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "Scheduled",
+									"disabled": true
+								},
+								{
+									"key": "cursor",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "pageSize",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CatalogReadToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"catalogAccessToken\", pm.response.json().access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "client_credentials",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "catalog-client",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "dev-catalog-secret",
+									"type": "text"
+								},
+								{
+									"key": "scope",
+									"value": "catalog:read",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloakUrl}}/realms/stagehand/protocol/openid-connect/token",
+							"host": [
+								"{{keycloakUrl}}"
+							],
+							"path": [
+								"realms",
+								"stagehand",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CatalogWriteToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"catalogAccessToken\", pm.response.json().access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "client_credentials",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "catalog-client",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "dev-catalog-secret",
+									"type": "text"
+								},
+								{
+									"key": "scope",
+									"value": "catalog:read catalog:write",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloakUrl}}/realms/stagehand/protocol/openid-connect/token",
+							"host": [
+								"{{keycloakUrl}}"
+							],
+							"path": [
+								"realms",
+								"stagehand",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Inventory",
+			"item": [
+				{
+					"name": "CreateStockItem",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set('idempotencyKey', pm.variables.replaceIn('{{$guid}}'));"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set('stockItemId', pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotencyKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{inventoryAccessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"listingId\": \"\",\n  \"totalQuantity\": 100\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/stock-items",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"stock-items"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetStockItem",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{inventoryAccessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/stock-items/{{stockItemId}}",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"stock-items",
+								"{{stockItemId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ReserveStock",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set('idempotencyKey', pm.variables.replaceIn('{{$guid}}'));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotencyKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{inventoryAccessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantity\": 30\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/stock-items/{{stockItemId}}/reserve",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"stock-items",
+								"{{stockItemId}}",
+								"reserve"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ReserveStock (Replay)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Idempotency replay test: hold the key stable across sends.",
+									"// Seeds replayKey once, then reuses it so the 2nd+ send replays.",
+									"if (!pm.environment.get('replayKey')) {",
+									"    pm.environment.set('replayKey', pm.variables.replaceIn('{{$guid}}'));",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{replayKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{inventoryAccessToken}}",
+								"type": "text"
+							}
+						],
+						"description": "Idempotency replay test. Send this request TWICE with the same key ({{replayKey}}): the 1st send reserves 5, the 2nd is replayed (204, no extra reserve). Then run GetStockItem -> availableQuantity dropped by 5 ONCE, not twice. To run a fresh cycle, clear the replayKey environment variable so the pre-request seeds a new one.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantity\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/stock-items/{{stockItemId}}/reserve",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"stock-items",
+								"{{stockItemId}}",
+								"reserve"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ReleaseStock",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set('idempotencyKey', pm.variables.replaceIn('{{$guid}}'));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotencyKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{inventoryAccessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantity\": 10\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/stock-items/{{stockItemId}}/release",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"stock-items",
+								"{{stockItemId}}",
+								"release"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CloseStockItem",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{inventoryAccessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/stock-items/{{stockItemId}}/close",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"stock-items",
+								"{{stockItemId}}",
+								"close"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SearchStockItems",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{inventoryAccessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/stock-items?pageSize=10",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"stock-items"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "Active",
+									"disabled": true
+								},
+								{
+									"key": "cursor",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "InventoryReadToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"inventoryAccessToken\", pm.response.json().access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "client_credentials",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "inventory-client",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "dev-inventory-secret",
+									"type": "text"
+								},
+								{
+									"key": "scope",
+									"value": "inventory:read",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloakUrl}}/realms/stagehand/protocol/openid-connect/token",
+							"host": [
+								"{{keycloakUrl}}"
+							],
+							"path": [
+								"realms",
+								"stagehand",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "InventoryWriteToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"inventoryAccessToken\", pm.response.json().access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "client_credentials",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "inventory-client",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "dev-inventory-secret",
+									"type": "text"
+								},
+								{
+									"key": "scope",
+									"value": "inventory:read inventory:write",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloakUrl}}/realms/stagehand/protocol/openid-connect/token",
+							"host": [
+								"{{keycloakUrl}}"
+							],
+							"path": [
+								"realms",
+								"stagehand",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

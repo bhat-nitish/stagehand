@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\building-blocks\Stagehand.SharedKernel\Stagehand.SharedKernel.csproj" />
+  </ItemGroup>
+</Project>
