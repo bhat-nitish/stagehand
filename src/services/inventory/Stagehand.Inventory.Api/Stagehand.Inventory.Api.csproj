@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Stagehand.Inventory.Application\Stagehand.Inventory.Application.csproj" />
     <ProjectReference Include="..\Stagehand.Inventory.Infrastructure\Stagehand.Inventory.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\building-blocks\Stagehand.SharedKernel.Bus\Stagehand.SharedKernel.Bus.csproj" />
     <ProjectReference Include="..\..\..\..\tools\ServiceDefaults\Stagehand.ServiceDefaults\Stagehand.ServiceDefaults.csproj" />
   </ItemGroup>
 

@@ -6,6 +6,7 @@ using Stagehand.Inventory.Application;
 using Stagehand.Inventory.Infrastructure;
 using Stagehand.Inventory.Infrastructure.Persistence;
 using Stagehand.ServiceDefaults;
+using Stagehand.SharedKernel.Bus;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,7 @@ builder.AddServiceDefaults();
 
 builder.Services.AddInventoryApplication();
 builder.Services.AddInventoryInfrastructure(builder.Configuration);
+builder.Services.AddStagehandMessaging(builder.Configuration);
 
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddProblemDetails();

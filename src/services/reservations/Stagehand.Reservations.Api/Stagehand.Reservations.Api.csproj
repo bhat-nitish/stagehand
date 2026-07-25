@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Http" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Stagehand.Reservations.Application\Stagehand.Reservations.Application.csproj" />
+    <ProjectReference Include="..\Stagehand.Reservations.Infrastructure\Stagehand.Reservations.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\building-blocks\Stagehand.SharedKernel.Bus\Stagehand.SharedKernel.Bus.csproj" />
+    <ProjectReference Include="..\..\..\..\tools\ServiceDefaults\Stagehand.ServiceDefaults\Stagehand.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+</Project>

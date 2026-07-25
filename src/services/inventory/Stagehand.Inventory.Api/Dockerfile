@@ -6,6 +6,7 @@ COPY Directory.Build.props Directory.Packages.props global.json .editorconfig ./
 
 COPY src/building-blocks/Stagehand.SharedKernel/Stagehand.SharedKernel.csproj src/building-blocks/Stagehand.SharedKernel/
 COPY src/building-blocks/Stagehand.SharedKernel.Application/Stagehand.SharedKernel.Application.csproj src/building-blocks/Stagehand.SharedKernel.Application/
+COPY src/building-blocks/Stagehand.SharedKernel.Bus/Stagehand.SharedKernel.Bus.csproj src/building-blocks/Stagehand.SharedKernel.Bus/
 COPY src/services/inventory/Stagehand.Inventory.Domain/Stagehand.Inventory.Domain.csproj src/services/inventory/Stagehand.Inventory.Domain/
 COPY src/services/inventory/Stagehand.Inventory.Application/Stagehand.Inventory.Application.csproj src/services/inventory/Stagehand.Inventory.Application/
 COPY src/services/inventory/Stagehand.Inventory.Infrastructure/Stagehand.Inventory.Infrastructure.csproj src/services/inventory/Stagehand.Inventory.Infrastructure/

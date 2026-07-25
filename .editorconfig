@@ -42,6 +42,9 @@ dotnet_style_qualification_for_event = false:suggestion
 csharp_style_namespace_declarations = block_scoped:none
 dotnet_diagnostic.IDE0161.severity = none
 dotnet_diagnostic.IDE0005.severity = none
+# Composite indexes scaffold as `columns: new[] { "A", "B" }`, which trips CA1861.
+# Migrations run once at startup, so the "called repeatedly" premise doesn't hold.
+dotnet_diagnostic.CA1861.severity = none
 
 # ===== .NET project / config files =====
 [*.{csproj,props,targets,xml,config}]

@@ -745,6 +745,370 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Reservations",
+			"item": [
+				{
+					"name": "PlaceReservation",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set('idempotencyKey', pm.variables.replaceIn('{{$guid}}'));"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set('reservationId', pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotencyKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{reservationsAccessToken}}",
+								"type": "text"
+							}
+						],
+						"description": "Places a reservation. Returns 201 + the new id, and the reservation starts as Pending.\n\nEVENTUAL CONSISTENCY: confirmation is NOT immediate. Until the messaging step lands (Reservations publishes ReservationRequested, Inventory consumes it and replies), a reservation stays Pending FOREVER. That is the expected result right now, not a bug.\n\nSet listingId to a real Catalog listing id before sending.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"listingId\": \"\",\n  \"quantity\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/reservations",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"reservations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PlaceReservation (Replay)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Idempotency replay test: hold the key stable across sends.",
+									"// Seeds replayKey once, then reuses it so the 2nd+ send replays.",
+									"if (!pm.environment.get('replayKey')) {",
+									"    pm.environment.set('replayKey', pm.variables.replaceIn('{{$guid}}'));",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{replayKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{reservationsAccessToken}}",
+								"type": "text"
+							}
+						],
+						"description": "Idempotency replay test. Send this request TWICE with the same key ({{replayKey}}): the 1st send creates a reservation (201), the 2nd replays the SAME 201 body with the SAME id -- no second reservation is created. Then run SearchReservations to confirm only one row exists. To run a fresh cycle, clear the replayKey environment variable so the pre-request seeds a new one.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"listingId\": \"\",\n  \"quantity\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/reservations",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"reservations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetReservation",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{reservationsAccessToken}}",
+								"type": "text"
+							}
+						],
+						"description": "Poll this after PlaceReservation to watch the status transition. Today it stays Pending (nothing consumes the request yet); once messaging lands it becomes Confirmed (stock available) or Rejected (insufficient).",
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/reservations/{{reservationId}}",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"reservations",
+								"{{reservationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CancelReservation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{reservationsAccessToken}}",
+								"type": "text"
+							}
+						],
+						"description": "Cancels a Pending OR Confirmed reservation -> 204. Cancelling anything else -> 409.\n\nDeliberately NOT Idempotency-Key protected: it is a bodiless state transition, same as Inventory's CloseStockItem.",
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/reservations/{{reservationId}}/cancel",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"reservations",
+								"{{reservationId}}",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SearchReservations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{reservationsAccessToken}}",
+								"type": "text"
+							}
+						],
+						"description": "Cursor-paged, ordered by (CreatedAt, Id) -- chronological, unlike Inventory's id-only cursor. Copy nextCursor from the response into the cursor param to page.",
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/reservations?pageSize=10",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"reservations"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "Pending",
+									"disabled": true
+								},
+								{
+									"key": "cursor",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ReservationsPingV2",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"description": "AllowAnonymous on the SERVICE, but the gateway applies AuthorizationPolicy 'default' to every route -- so through {{gatewayUrl}} this returns 401 (same as Inventory's ping). A 401 here still proves the route matched; an unmatched route returns 404. Hit the service directly via {{reservationsUrl}} to get the anonymous 200.",
+						"url": {
+							"raw": "{{gatewayUrl}}/v2/reservations/ping",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v2",
+								"reservations",
+								"ping"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ReservationsReadToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"reservationsAccessToken\", pm.response.json().access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "client_credentials",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "reservations-client",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "dev-reservations-secret",
+									"type": "text"
+								},
+								{
+									"key": "scope",
+									"value": "reservations:read",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloakUrl}}/realms/stagehand/protocol/openid-connect/token",
+							"host": [
+								"{{keycloakUrl}}"
+							],
+							"path": [
+								"realms",
+								"stagehand",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ReservationsWriteToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"reservationsAccessToken\", pm.response.json().access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "client_credentials",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "reservations-client",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "dev-reservations-secret",
+									"type": "text"
+								},
+								{
+									"key": "scope",
+									"value": "reservations:read reservations:write",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloakUrl}}/realms/stagehand/protocol/openid-connect/token",
+							"host": [
+								"{{keycloakUrl}}"
+							],
+							"path": [
+								"realms",
+								"stagehand",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }

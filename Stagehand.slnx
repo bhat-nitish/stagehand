@@ -15,7 +15,9 @@
   </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/building-blocks/">
+    <Project Path="src/building-blocks/Stagehand.Contracts/Stagehand.Contracts.csproj" />
     <Project Path="src/building-blocks/Stagehand.SharedKernel.Application/Stagehand.SharedKernel.Application.csproj" />
+    <Project Path="src/building-blocks/Stagehand.SharedKernel.Bus/Stagehand.SharedKernel.Bus.csproj" />
     <Project Path="src/building-blocks/Stagehand.SharedKernel/Stagehand.SharedKernel.csproj" />
   </Folder>
   <Folder Name="/src/platform/" />
@@ -34,5 +36,11 @@
     <Project Path="src/services/inventory/Stagehand.Inventory.Application/Stagehand.Inventory.Application.csproj" />
     <Project Path="src/services/inventory/Stagehand.Inventory.Domain/Stagehand.Inventory.Domain.csproj" />
     <Project Path="src/services/inventory/Stagehand.Inventory.Infrastructure/Stagehand.Inventory.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/services/reservations/">
+    <Project Path="src/services/reservations/Stagehand.Reservations.Api/Stagehand.Reservations.Api.csproj" />
+    <Project Path="src/services/reservations/Stagehand.Reservations.Application/Stagehand.Reservations.Application.csproj" />
+    <Project Path="src/services/reservations/Stagehand.Reservations.Domain/Stagehand.Reservations.Domain.csproj" />
+    <Project Path="src/services/reservations/Stagehand.Reservations.Infrastructure/Stagehand.Reservations.Infrastructure.csproj" />
   </Folder>
 </Solution>
