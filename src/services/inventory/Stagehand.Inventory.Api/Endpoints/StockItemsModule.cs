@@ -114,7 +114,7 @@ internal sealed class StockItemsModule : IEndpointModule
         IMediator mediator,
         CancellationToken cancellationToken)
     {
-        var command = new ReserveStockCommand(new StockItemId(id), request.Quantity);
+        var command = new ReserveStockCommand(new StockItemId(id), request.ReservationId, request.Quantity);
         var result = await mediator.Send(command, cancellationToken);
 
         return result.IsFailure ? result.ToProblem() : Results.NoContent();
@@ -126,7 +126,7 @@ internal sealed class StockItemsModule : IEndpointModule
         IMediator mediator,
         CancellationToken cancellationToken)
     {
-        var command = new ReleaseStockCommand(new StockItemId(id), request.Quantity);
+        var command = new ReleaseStockCommand(new StockItemId(id), request.ReservationId);
         var result = await mediator.Send(command, cancellationToken);
 
         return result.IsFailure ? result.ToProblem() : Results.NoContent();

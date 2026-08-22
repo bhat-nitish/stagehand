@@ -24,3 +24,4 @@ spec:
           args: ["migrate"]
           env:
             {{- include "inventory.dbEnv" . | nindent 12 }}
+            {{- include "inventory.rabbitEnv" . | nindent 12 }}

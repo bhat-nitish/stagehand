@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Stagehand.Reservations.Domain.Reservations;
 
@@ -16,6 +17,11 @@ public sealed class ReservationsDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(Schema);
+
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ReservationsDbContext).Assembly);
     }
 }

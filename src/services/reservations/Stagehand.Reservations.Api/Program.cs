@@ -1,9 +1,13 @@
 using Asp.Versioning;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Stagehand.Reservations.Api;
 using Stagehand.Reservations.Api.Infrastructure;
 using Stagehand.Reservations.Application;
 using Stagehand.Reservations.Infrastructure;
+using Stagehand.Contracts.Inventory;
+using Stagehand.Contracts.Reservations;
+using Stagehand.Reservations.Infrastructure.Messaging.Sagas;
 using Stagehand.Reservations.Infrastructure.Persistence;
 using Stagehand.ServiceDefaults;
 using Stagehand.SharedKernel.Bus;
@@ -15,7 +19,34 @@ builder.AddServiceDefaults();
 
 builder.Services.AddReservationsApplication(builder.Configuration);
 builder.Services.AddReservationsInfrastructure(builder.Configuration);
-builder.Services.AddStagehandMessaging(builder.Configuration);
+// Commands are Sent to a specific queue, not published. Queue names come from
+// SetKebabCaseEndpointNameFormatter applied to the consumer name.
+EndpointConvention.Map<ReserveStock>(new Uri("queue:reserve-stock"));
+EndpointConvention.Map<ReleaseStock>(new Uri("queue:release-stock"));
+EndpointConvention.Map<ConfirmReservation>(new Uri("queue:confirm-reservation"));
+EndpointConvention.Map<RejectReservation>(new Uri("queue:reject-reservation"));
+EndpointConvention.Map<ExpireReservation>(new Uri("queue:expire-reservation"));
+
+builder.Services.AddStagehandMessaging(builder.Configuration, messaging =>
+{
+    messaging.AddConsumers(typeof(ReservationsDbContext).Assembly);
+
+    messaging.AddSagaStateMachine<ReservationStateMachine, ReservationState>()
+        .EntityFrameworkRepository(repository =>
+        {
+            repository.ExistingDbContext<ReservationsDbContext>();
+            repository.UsePostgres();
+        });
+
+    messaging.AddEntityFrameworkOutbox<ReservationsDbContext>(outbox =>
+    {
+        outbox.UsePostgres();
+        outbox.UseBusOutbox();
+    });
+
+    messaging.AddConfigureEndpointsCallback((context, _, cfg) =>
+        cfg.UseEntityFrameworkOutbox<ReservationsDbContext>(context));
+});
 
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddProblemDetails();

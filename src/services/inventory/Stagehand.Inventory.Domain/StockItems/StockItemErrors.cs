@@ -13,9 +13,4 @@ public static class StockItemErrors
         "StockItem.InsufficientStock",
         $"Cannot reserve {requested} unit(s); only {available} available for stock item '{id.Value}'.",
         ErrorType.Conflict);
-
-    public static ResultError ReleaseExceedsReserved(StockItemId id, int requested, int reserved) => new(
-        "StockItem.ReleaseExceedsReserved",
-        $"Cannot release {requested} unit(s); only {reserved} reserved for stock item '{id.Value}'.",
-        ErrorType.Validation);
 }

@@ -25,7 +25,7 @@ internal sealed class ReserveStockCommandHandler : ICommandHandler<ReserveStockC
             return Result.Failure(StockItemErrors.NotFound(command.StockItemId));
         }
 
-        var result = stockItem.Reserve(command.Quantity);
+        var result = stockItem.Reserve(command.ReservationId, command.Quantity);
 
         if (result.IsFailure)
         {

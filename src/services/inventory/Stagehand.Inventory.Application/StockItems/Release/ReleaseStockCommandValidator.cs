@@ -6,7 +6,7 @@ public sealed class ReleaseStockCommandValidator : AbstractValidator<ReleaseStoc
 {
     public ReleaseStockCommandValidator()
     {
-        RuleFor(c => c.Quantity)
-            .GreaterThan(0);
+        RuleFor(c => c.ReservationId)
+            .NotEmpty();
     }
 }

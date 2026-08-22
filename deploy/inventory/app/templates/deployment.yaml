@@ -33,6 +33,7 @@ spec:
               value: {{ $iss | quote }}
             {{- end }}
             {{- include "inventory.dbEnv" . | nindent 12 }}
+            {{- include "inventory.rabbitEnv" . | nindent 12 }}
           livenessProbe:
             httpGet:
               path: /alive

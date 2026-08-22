@@ -31,8 +31,6 @@ internal sealed class PlaceReservationCommandHandler
         PlaceReservationCommand command,
         CancellationToken cancellationToken)
     {
-        // Read the clock once — deriving both instants from the same reading keeps the
-        // hold exactly HoldMinutes long.
         var now = _timeProvider.GetUtcNow();
         var expiresAt = now.AddMinutes(_options.HoldMinutes);
 

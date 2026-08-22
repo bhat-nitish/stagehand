@@ -12,8 +12,8 @@ public sealed class Reservation : AggregateRoot<ReservationId>
     public DateTimeOffset ExpiresAt { get; private set; }
     public string? RejectionReason { get; private set; }
 
-    // Parameter names must match property names — EF materialises through this
-    // constructor and binds its arguments by name.
+    // EF materialises through this constructor and binds arguments by name,
+    // so parameter names must match property names.
     private Reservation(
         ReservationId id,
         Guid listingId,
@@ -84,12 +84,8 @@ public sealed class Reservation : AggregateRoot<ReservationId>
             return Result.Failure(ReservationErrors.CannotCancel(Id, Status));
         }
 
-        // A confirmed reservation holds stock in Inventory; a pending one does not yet.
-        // The previous status drives the compensating release downstream.
-        var previousStatus = Status;
-
         Status = ReservationStatus.Cancelled;
-        RaiseDomainEvent(new ReservationCancelled(Id, ListingId, Quantity, previousStatus));
+        RaiseDomainEvent(new ReservationCancelled(Id, ListingId, Quantity));
         return Result.Success();
     }
 }

@@ -40,6 +40,16 @@ function applydb {
     }
 }
 
+function applyrabbitmq {
+    kubectl apply -k (Join-Path $PSScriptRoot 'deploy\platform\rabbitmq\overlays\dev')
+    kubectl rollout status statefulset/rabbitmq -n messaging --timeout=300s
+}
+
+function pfrabbitmq {
+    # Blocking: management UI at http://localhost:15672 (see the credentials secret).
+    kubectl port-forward svc/rabbitmq -n messaging 15672:15672
+}
+
 function applykeycloak {
     kubectl apply -k (Join-Path $PSScriptRoot 'deploy\platform\keycloak\overlays\dev')
     kubectl rollout restart deploy/keycloak -n identity
@@ -50,6 +60,7 @@ function upk8s {
     # Routine deploy-all onto an existing cluster (operator already installed).
     startcluster
     applydb
+    applyrabbitmq
     applykeycloak
 
     # DBs must be Ready before services run their migration jobs.

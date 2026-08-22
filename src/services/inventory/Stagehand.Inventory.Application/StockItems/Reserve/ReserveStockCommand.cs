@@ -4,4 +4,5 @@ using Stagehand.SharedKernel.Application.Messaging;
 
 namespace Stagehand.Inventory.Application.StockItems.Reserve;
 
-public sealed record ReserveStockCommand(StockItemId StockItemId, int Quantity) : ICommand<Result>;
+public sealed record ReserveStockCommand(StockItemId StockItemId, Guid ReservationId, int Quantity)
+    : ICommand<Result>;

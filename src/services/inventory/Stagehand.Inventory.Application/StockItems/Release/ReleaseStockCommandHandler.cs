@@ -25,7 +25,7 @@ internal sealed class ReleaseStockCommandHandler : ICommandHandler<ReleaseStockC
             return Result.Failure(StockItemErrors.NotFound(command.StockItemId));
         }
 
-        var result = stockItem.Release(command.Quantity);
+        var result = stockItem.Release(command.ReservationId);
 
         if (result.IsFailure)
         {

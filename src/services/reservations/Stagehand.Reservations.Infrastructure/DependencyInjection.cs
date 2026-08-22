@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Stagehand.Reservations.Application.Abstractions.Persistence;
 using Stagehand.Reservations.Infrastructure.Idempotency;
+using Stagehand.Reservations.Infrastructure.Messaging;
 using Stagehand.Reservations.Infrastructure.Persistence;
 using Stagehand.SharedKernel.Application.Idempotency;
 using Stagehand.SharedKernel.Application.Persistence;
@@ -29,6 +30,11 @@ public static class DependencyInjection
         services.AddScoped<IReservationRepository, ReservationRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IIdempotencyStore, IdempotencyStore>();
+
+        services.AddHostedService<ReservationHoldSweeper>();
+
+        services.AddMediatR(configuration =>
+            configuration.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
 
         return services;
     }

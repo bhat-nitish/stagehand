@@ -417,7 +417,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"quantity\": 30\n}",
+							"raw": "{\n  \"reservationId\": \"\",\n  \"quantity\": 30\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -435,7 +435,8 @@
 								"{{stockItemId}}",
 								"reserve"
 							]
-						}
+						},
+						"description": "Holds stock for a specific reservation. Set reservationId to a real reservation id (or any GUID for a standalone test). Reserving twice with the SAME reservationId is a no-op - availableQuantity drops once."
 					},
 					"response": []
 				},
@@ -474,10 +475,10 @@
 								"type": "text"
 							}
 						],
-						"description": "Idempotency replay test. Send this request TWICE with the same key ({{replayKey}}): the 1st send reserves 5, the 2nd is replayed (204, no extra reserve). Then run GetStockItem -> availableQuantity dropped by 5 ONCE, not twice. To run a fresh cycle, clear the replayKey environment variable so the pre-request seeds a new one.",
+						"description": "Idempotency replay test, two layers. Send TWICE with the same key ({{replayKey}}): the HTTP idempotency filter replays the 2nd send. Then change the Idempotency-Key but keep the SAME reservationId and send again: the request reaches the domain, but StockHold makes Reserve a no-op, so availableQuantity STILL drops only once. That second case is the one messaging depends on - a redelivered message must not double-count.",
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"quantity\": 5\n}",
+							"raw": "{\n  \"reservationId\": \"\",\n  \"quantity\": 5\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -532,7 +533,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"quantity\": 10\n}",
+							"raw": "{\n  \"reservationId\": \"\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -550,7 +551,8 @@
 								"{{stockItemId}}",
 								"release"
 							]
-						}
+						},
+						"description": "Releases the whole hold for this reservation - quantity comes from the hold, so partial release no longer exists. Releasing twice is a no-op (no active hold the second time), which is what makes duplicate release messages harmless."
 					},
 					"response": []
 				},
@@ -789,7 +791,7 @@
 								"type": "text"
 							}
 						],
-						"description": "Places a reservation. Returns 201 + the new id, and the reservation starts as Pending.\n\nEVENTUAL CONSISTENCY: confirmation is NOT immediate. Until the messaging step lands (Reservations publishes ReservationRequested, Inventory consumes it and replies), a reservation stays Pending FOREVER. That is the expected result right now, not a bug.\n\nSet listingId to a real Catalog listing id before sending.",
+						"description": "Places a reservation. Returns 201 + id; status starts Pending.\n\nThe saga then drives it automatically: Pending -> Confirmed (stock held) or Rejected (insufficient stock / no stock item). Poll GetReservation to watch it. This is EVENTUALLY consistent - the 201 does not mean confirmed.\n\nSet listingId to a listing that has a stock item in Inventory, otherwise it will be Rejected with NoStockItemForListing.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"listingId\": \"\",\n  \"quantity\": 2\n}",
@@ -881,7 +883,7 @@
 								"type": "text"
 							}
 						],
-						"description": "Poll this after PlaceReservation to watch the status transition. Today it stays Pending (nothing consumes the request yet); once messaging lands it becomes Confirmed (stock available) or Rejected (insufficient).",
+						"description": "Poll after PlaceReservation. Expect Pending briefly, then Confirmed or Rejected (rejectionReason is set when Rejected).\n\nOther terminal states: Cancelled (you cancelled it) and Expired (the hold elapsed - see Reservations:HoldMinutes; dev is set to 1 minute).",
 						"url": {
 							"raw": "{{gatewayUrl}}/v1/reservations/{{reservationId}}",
 							"host": [
@@ -907,7 +909,7 @@
 								"type": "text"
 							}
 						],
-						"description": "Cancels a Pending OR Confirmed reservation -> 204. Cancelling anything else -> 409.\n\nDeliberately NOT Idempotency-Key protected: it is a bodiless state transition, same as Inventory's CloseStockItem.",
+						"description": "Cancels a Pending OR Confirmed reservation -> 204. Anything else -> 409.\n\nIf stock was already held, the saga publishes a compensating release and Inventory gives it back - check the stock item afterwards, availableQuantity should return to its previous value.\n\nDeliberately NOT Idempotency-Key protected: a bodiless state transition, same as Inventory CloseStockItem.",
 						"url": {
 							"raw": "{{gatewayUrl}}/v1/reservations/{{reservationId}}/cancel",
 							"host": [

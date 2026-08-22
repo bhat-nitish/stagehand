@@ -35,12 +35,9 @@ internal sealed class ReservationConfiguration : IEntityTypeConfiguration<Reserv
         builder.Property(r => r.ExpiresAt)
             .IsRequired();
 
-        // Populated from Inventory's rejection over the bus — bounded so another
-        // service cannot drive an unbounded write into this table.
         builder.Property(r => r.RejectionReason)
             .HasMaxLength(256);
 
-        // Backs the sole ordering path of the search endpoint: the (CreatedAt, Id) keyset cursor.
         builder.HasIndex(r => new { r.CreatedAt, r.Id });
 
         builder.Ignore(r => r.DomainEvents);

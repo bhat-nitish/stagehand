@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Stagehand.Inventory.Api;
 using Stagehand.Inventory.Api.Infrastructure;
@@ -15,7 +16,20 @@ builder.AddServiceDefaults();
 
 builder.Services.AddInventoryApplication();
 builder.Services.AddInventoryInfrastructure(builder.Configuration);
-builder.Services.AddStagehandMessaging(builder.Configuration);
+builder.Services.AddStagehandMessaging(builder.Configuration, messaging =>
+{
+    messaging.AddConsumers(typeof(InventoryDbContext).Assembly);
+
+    messaging.AddEntityFrameworkOutbox<InventoryDbContext>(outbox =>
+    {
+        outbox.UsePostgres();
+        outbox.UseBusOutbox();
+    });
+
+    // Inbox: dedupes redelivery of the SAME message id per receive endpoint.
+    messaging.AddConfigureEndpointsCallback((context, _, cfg) =>
+        cfg.UseEntityFrameworkOutbox<InventoryDbContext>(context));
+});
 
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddProblemDetails();

@@ -12,6 +12,16 @@ service:
 database:
   secretName: inventory-db-app
 
+rabbitmq:
+  # Secrets are namespaced, so the messaging namespace's secret is unreachable
+  # from here. This chart creates its own copy in the release namespace.
+  secretName: inventory-rabbitmq
+  host: rabbitmq.messaging.svc.cluster.local
+  port: 5672
+  # Dev credentials — must match deploy/platform/rabbitmq/base/secret.yaml.
+  username: stagehand
+  password: dev-rabbit-password
+
 keycloak:
   # In-cluster realm URL the API uses to fetch OIDC metadata + JWKS.
   authority: http://keycloak.identity.svc.cluster.local:8080/realms/stagehand

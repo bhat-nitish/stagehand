@@ -38,7 +38,6 @@ internal sealed class ReservationsModule : IEndpointModule
             .WithName(nameof(GetByIdAsync))
             .RequireAuthorization("reservations:read");
 
-        // Not idempotency-protected: a bodiless state transition, same call as Inventory's close.
         group.MapPost("/{id:guid}/cancel", CancelAsync)
             .HasApiVersion(ApiVersions.V1)
             .RequireAuthorization("reservations:write");

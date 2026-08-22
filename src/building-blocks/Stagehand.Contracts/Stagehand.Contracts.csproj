@@ -1,9 +1,3 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!--
-    Deliberately dependency-free: no MassTransit, no domain projects, no packages.
-    These records are the wire contract between bounded contexts, so anything they
-    reference would leak across a context boundary.
-  -->
-
 </Project>

@@ -7,6 +7,7 @@ COPY Directory.Build.props Directory.Packages.props global.json .editorconfig ./
 COPY src/building-blocks/Stagehand.SharedKernel/Stagehand.SharedKernel.csproj src/building-blocks/Stagehand.SharedKernel/
 COPY src/building-blocks/Stagehand.SharedKernel.Application/Stagehand.SharedKernel.Application.csproj src/building-blocks/Stagehand.SharedKernel.Application/
 COPY src/building-blocks/Stagehand.SharedKernel.Bus/Stagehand.SharedKernel.Bus.csproj src/building-blocks/Stagehand.SharedKernel.Bus/
+COPY src/building-blocks/Stagehand.Contracts/Stagehand.Contracts.csproj src/building-blocks/Stagehand.Contracts/
 COPY src/services/reservations/Stagehand.Reservations.Domain/Stagehand.Reservations.Domain.csproj src/services/reservations/Stagehand.Reservations.Domain/
 COPY src/services/reservations/Stagehand.Reservations.Application/Stagehand.Reservations.Application.csproj src/services/reservations/Stagehand.Reservations.Application/
 COPY src/services/reservations/Stagehand.Reservations.Infrastructure/Stagehand.Reservations.Infrastructure.csproj src/services/reservations/Stagehand.Reservations.Infrastructure/

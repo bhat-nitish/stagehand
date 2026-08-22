@@ -14,6 +14,7 @@
     <ProjectReference Include="..\Stagehand.Reservations.Application\Stagehand.Reservations.Application.csproj" />
     <ProjectReference Include="..\Stagehand.Reservations.Infrastructure\Stagehand.Reservations.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\building-blocks\Stagehand.SharedKernel.Bus\Stagehand.SharedKernel.Bus.csproj" />
+    <ProjectReference Include="..\..\..\building-blocks\Stagehand.Contracts\Stagehand.Contracts.csproj" />
     <ProjectReference Include="..\..\..\..\tools\ServiceDefaults\Stagehand.ServiceDefaults\Stagehand.ServiceDefaults.csproj" />
   </ItemGroup>
 
