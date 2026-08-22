@@ -355,7 +355,8 @@
 								"v1",
 								"stock-items"
 							]
-						}
+						},
+						"description": "Creates the stock held against a Catalog listing. ONE stock item per listing - a second create for the same listingId returns 409 StockItem.AlreadyExistsForListing (enforced by a unique index).\n\nA reservation for a listing with NO stock item is Rejected with NoStockItemForListing, so create this first when testing the reservations flow."
 					},
 					"response": []
 				},
@@ -380,7 +381,8 @@
 								"stock-items",
 								"{{stockItemId}}"
 							]
-						}
+						},
+						"description": "availableQuantity = totalQuantity - reservedQuantity. Stock is held per reservation as a StockHold, so reservedQuantity moves when the saga reserves or releases.\n\nUse this to verify compensation: after cancelling or expiring a reservation, availableQuantity should return to its previous value exactly once, never twice."
 					},
 					"response": []
 				},
