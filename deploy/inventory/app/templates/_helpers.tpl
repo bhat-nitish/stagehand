@@ -65,3 +65,23 @@ Job so the two can never drift. Include with `nindent 12` under an `env:` key.
 - name: ConnectionStrings__Inventory
   value: "Host=$(DB_HOST);Port=$(DB_PORT);Database=$(DB_NAME);Username=$(DB_USER);Password=$(DB_PASSWORD)"
 {{- end -}}
+
+{{/*
+RabbitMQ connection string. Required by the migration Job as well as the
+Deployment: Program.cs registers messaging during service registration, before
+the "migrate" branch runs, so a missing connection string fails the Job.
+*/}}
+{{- define "inventory.rabbitEnv" -}}
+- name: RABBIT_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.rabbitmq.secretName }}
+      key: username
+- name: RABBIT_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.rabbitmq.secretName }}
+      key: password
+- name: ConnectionStrings__rabbitmq
+  value: "amqp://$(RABBIT_USER):$(RABBIT_PASSWORD)@{{ .Values.rabbitmq.host }}:{{ .Values.rabbitmq.port }}"
+{{- end -}}

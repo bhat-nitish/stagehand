@@ -25,6 +25,18 @@
       "description": "Write access to Inventory",
       "protocol": "openid-connect",
       "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" }
+    },
+    {
+      "name": "reservations:read",
+      "description": "Read access to Reservations",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" }
+    },
+    {
+      "name": "reservations:write",
+      "description": "Write access to Reservations",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" }
     }
   ],
   "clients": [
@@ -49,6 +61,17 @@
       "standardFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "optionalClientScopes": [ "inventory:read", "inventory:write" ]
+    },
+    {
+      "clientId": "reservations-client",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "dev-reservations-secret",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "optionalClientScopes": [ "reservations:read", "reservations:write" ]
     }
   ]
 }

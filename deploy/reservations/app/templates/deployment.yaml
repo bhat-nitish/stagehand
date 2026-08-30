@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "reservations.fullname" . }}
+  labels:
+    {{- include "reservations.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "reservations.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "reservations.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: {{ .Values.env.aspnetcoreEnvironment | quote }}
+            - name: Keycloak__Authority
+              value: {{ .Values.keycloak.authority | quote }}
+            - name: Keycloak__RequireHttpsMetadata
+              value: {{ .Values.keycloak.requireHttpsMetadata | quote }}
+            {{- range $i, $iss := .Values.keycloak.validIssuers }}
+            - name: Keycloak__ValidIssuers__{{ $i }}
+              value: {{ $iss | quote }}
+            {{- end }}
+            - name: Reservations__HoldMinutes
+              value: {{ .Values.reservations.holdMinutes | quote }}
+            - name: Reservations__SweepIntervalSeconds
+              value: {{ .Values.reservations.sweepIntervalSeconds | quote }}
+            {{- include "reservations.dbEnv" . | nindent 12 }}
+            {{- include "reservations.rabbitEnv" . | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /alive
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Stagehand.Inventory.Domain.StockItems;
 
@@ -21,6 +22,9 @@ internal sealed class StockItemConfiguration : IEntityTypeConfiguration<StockIte
         builder.Property(s => s.ListingId)
             .IsRequired();
 
+        builder.HasIndex(s => s.ListingId)
+            .IsUnique();
+
         builder.Property(s => s.TotalQuantity)
             .IsRequired();
 
@@ -31,6 +35,16 @@ internal sealed class StockItemConfiguration : IEntityTypeConfiguration<StockIte
             .HasConversion<string>()
             .HasMaxLength(32)
             .IsRequired();
+
+        builder.HasMany(s => s.Holds)
+            .WithOne()
+            .HasForeignKey("StockItemId")
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Metadata
+            .FindNavigation(nameof(StockItem.Holds))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
 
         builder.Ignore(s => s.AvailableQuantity);
         builder.Ignore(s => s.DomainEvents);

@@ -355,7 +355,8 @@
 								"v1",
 								"stock-items"
 							]
-						}
+						},
+						"description": "Creates the stock held against a Catalog listing. ONE stock item per listing - a second create for the same listingId returns 409 StockItem.AlreadyExistsForListing (enforced by a unique index).\n\nA reservation for a listing with NO stock item is Rejected with NoStockItemForListing, so create this first when testing the reservations flow."
 					},
 					"response": []
 				},
@@ -380,7 +381,8 @@
 								"stock-items",
 								"{{stockItemId}}"
 							]
-						}
+						},
+						"description": "availableQuantity = totalQuantity - reservedQuantity. Stock is held per reservation as a StockHold, so reservedQuantity moves when the saga reserves or releases.\n\nUse this to verify compensation: after cancelling or expiring a reservation, availableQuantity should return to its previous value exactly once, never twice."
 					},
 					"response": []
 				},
@@ -417,7 +419,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"quantity\": 30\n}",
+							"raw": "{\n  \"reservationId\": \"\",\n  \"quantity\": 30\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -435,7 +437,8 @@
 								"{{stockItemId}}",
 								"reserve"
 							]
-						}
+						},
+						"description": "Holds stock for a specific reservation. Set reservationId to a real reservation id (or any GUID for a standalone test). Reserving twice with the SAME reservationId is a no-op - availableQuantity drops once."
 					},
 					"response": []
 				},
@@ -474,10 +477,10 @@
 								"type": "text"
 							}
 						],
-						"description": "Idempotency replay test. Send this request TWICE with the same key ({{replayKey}}): the 1st send reserves 5, the 2nd is replayed (204, no extra reserve). Then run GetStockItem -> availableQuantity dropped by 5 ONCE, not twice. To run a fresh cycle, clear the replayKey environment variable so the pre-request seeds a new one.",
+						"description": "Idempotency replay test, two layers. Send TWICE with the same key ({{replayKey}}): the HTTP idempotency filter replays the 2nd send. Then change the Idempotency-Key but keep the SAME reservationId and send again: the request reaches the domain, but StockHold makes Reserve a no-op, so availableQuantity STILL drops only once. That second case is the one messaging depends on - a redelivered message must not double-count.",
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"quantity\": 5\n}",
+							"raw": "{\n  \"reservationId\": \"\",\n  \"quantity\": 5\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -532,7 +535,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"quantity\": 10\n}",
+							"raw": "{\n  \"reservationId\": \"\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -550,7 +553,8 @@
 								"{{stockItemId}}",
 								"release"
 							]
-						}
+						},
+						"description": "Releases the whole hold for this reservation - quantity comes from the hold, so partial release no longer exists. Releasing twice is a no-op (no active hold the second time), which is what makes duplicate release messages harmless."
 					},
 					"response": []
 				},
@@ -724,6 +728,370 @@
 								{
 									"key": "scope",
 									"value": "inventory:read inventory:write",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloakUrl}}/realms/stagehand/protocol/openid-connect/token",
+							"host": [
+								"{{keycloakUrl}}"
+							],
+							"path": [
+								"realms",
+								"stagehand",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reservations",
+			"item": [
+				{
+					"name": "PlaceReservation",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set('idempotencyKey', pm.variables.replaceIn('{{$guid}}'));"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set('reservationId', pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotencyKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{reservationsAccessToken}}",
+								"type": "text"
+							}
+						],
+						"description": "Places a reservation. Returns 201 + id; status starts Pending.\n\nThe saga then drives it automatically: Pending -> Confirmed (stock held) or Rejected (insufficient stock / no stock item). Poll GetReservation to watch it. This is EVENTUALLY consistent - the 201 does not mean confirmed.\n\nSet listingId to a listing that has a stock item in Inventory, otherwise it will be Rejected with NoStockItemForListing.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"listingId\": \"\",\n  \"quantity\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/reservations",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"reservations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PlaceReservation (Replay)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Idempotency replay test: hold the key stable across sends.",
+									"// Seeds replayKey once, then reuses it so the 2nd+ send replays.",
+									"if (!pm.environment.get('replayKey')) {",
+									"    pm.environment.set('replayKey', pm.variables.replaceIn('{{$guid}}'));",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{replayKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{reservationsAccessToken}}",
+								"type": "text"
+							}
+						],
+						"description": "Idempotency replay test. Send this request TWICE with the same key ({{replayKey}}): the 1st send creates a reservation (201), the 2nd replays the SAME 201 body with the SAME id -- no second reservation is created. Then run SearchReservations to confirm only one row exists. To run a fresh cycle, clear the replayKey environment variable so the pre-request seeds a new one.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"listingId\": \"\",\n  \"quantity\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/reservations",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"reservations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetReservation",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{reservationsAccessToken}}",
+								"type": "text"
+							}
+						],
+						"description": "Poll after PlaceReservation. Expect Pending briefly, then Confirmed or Rejected (rejectionReason is set when Rejected).\n\nOther terminal states: Cancelled (you cancelled it) and Expired (the hold elapsed - see Reservations:HoldMinutes; dev is set to 1 minute).",
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/reservations/{{reservationId}}",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"reservations",
+								"{{reservationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CancelReservation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{reservationsAccessToken}}",
+								"type": "text"
+							}
+						],
+						"description": "Cancels a Pending OR Confirmed reservation -> 204. Anything else -> 409.\n\nIf stock was already held, the saga publishes a compensating release and Inventory gives it back - check the stock item afterwards, availableQuantity should return to its previous value.\n\nDeliberately NOT Idempotency-Key protected: a bodiless state transition, same as Inventory CloseStockItem.",
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/reservations/{{reservationId}}/cancel",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"reservations",
+								"{{reservationId}}",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SearchReservations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{reservationsAccessToken}}",
+								"type": "text"
+							}
+						],
+						"description": "Cursor-paged, ordered by (CreatedAt, Id) -- chronological, unlike Inventory's id-only cursor. Copy nextCursor from the response into the cursor param to page.",
+						"url": {
+							"raw": "{{gatewayUrl}}/v1/reservations?pageSize=10",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v1",
+								"reservations"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "Pending",
+									"disabled": true
+								},
+								{
+									"key": "cursor",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ReservationsPingV2",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"description": "AllowAnonymous on the SERVICE, but the gateway applies AuthorizationPolicy 'default' to every route -- so through {{gatewayUrl}} this returns 401 (same as Inventory's ping). A 401 here still proves the route matched; an unmatched route returns 404. Hit the service directly via {{reservationsUrl}} to get the anonymous 200.",
+						"url": {
+							"raw": "{{gatewayUrl}}/v2/reservations/ping",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"v2",
+								"reservations",
+								"ping"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ReservationsReadToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"reservationsAccessToken\", pm.response.json().access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "client_credentials",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "reservations-client",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "dev-reservations-secret",
+									"type": "text"
+								},
+								{
+									"key": "scope",
+									"value": "reservations:read",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloakUrl}}/realms/stagehand/protocol/openid-connect/token",
+							"host": [
+								"{{keycloakUrl}}"
+							],
+							"path": [
+								"realms",
+								"stagehand",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ReservationsWriteToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"reservationsAccessToken\", pm.response.json().access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "client_credentials",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "reservations-client",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "dev-reservations-secret",
+									"type": "text"
+								},
+								{
+									"key": "scope",
+									"value": "reservations:read reservations:write",
 									"type": "text"
 								}
 							]

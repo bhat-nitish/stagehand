@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Stagehand.Inventory.Api;
 using Stagehand.Inventory.Api.Infrastructure;
@@ -6,6 +7,7 @@ using Stagehand.Inventory.Application;
 using Stagehand.Inventory.Infrastructure;
 using Stagehand.Inventory.Infrastructure.Persistence;
 using Stagehand.ServiceDefaults;
+using Stagehand.SharedKernel.Bus;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +16,20 @@ builder.AddServiceDefaults();
 
 builder.Services.AddInventoryApplication();
 builder.Services.AddInventoryInfrastructure(builder.Configuration);
+builder.Services.AddStagehandMessaging(builder.Configuration, messaging =>
+{
+    messaging.AddConsumers(typeof(InventoryDbContext).Assembly);
+
+    messaging.AddEntityFrameworkOutbox<InventoryDbContext>(outbox =>
+    {
+        outbox.UsePostgres();
+        outbox.UseBusOutbox();
+    });
+
+    // Inbox: dedupes redelivery of the SAME message id per receive endpoint.
+    messaging.AddConfigureEndpointsCallback((context, _, cfg) =>
+        cfg.UseEntityFrameworkOutbox<InventoryDbContext>(context));
+});
 
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddProblemDetails();

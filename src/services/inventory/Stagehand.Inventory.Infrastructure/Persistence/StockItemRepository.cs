@@ -15,7 +15,14 @@ internal sealed class StockItemRepository : IStockItemRepository
     }
 
     public Task<StockItem?> GetByIdAsync(StockItemId id, CancellationToken cancellationToken) =>
-        _dbContext.StockItems.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+        _dbContext.StockItems
+            .Include(s => s.Holds)
+            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+
+    public Task<StockItem?> GetByListingAsync(Guid listingId, CancellationToken cancellationToken) =>
+        _dbContext.StockItems
+            .Include(s => s.Holds)
+            .FirstOrDefaultAsync(s => s.ListingId == listingId, cancellationToken);
 
     public async Task<IReadOnlyList<StockItem>> SearchAsync(
         StockItemsCursor? cursor,

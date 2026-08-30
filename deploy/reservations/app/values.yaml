@@ -1,0 +1,49 @@
+replicaCount: 1
+
+image:
+  repository: stagehand-reservations
+  tag: dev
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+database:
+  secretName: reservations-db-app
+
+rabbitmq:
+  # Secrets are namespaced, so the messaging namespace's secret is unreachable
+  # from here. This chart creates its own copy in the release namespace.
+  secretName: reservations-rabbitmq
+  host: rabbitmq.messaging.svc.cluster.local
+  port: 5672
+  # Dev credentials — must match deploy/platform/rabbitmq/base/secret.yaml.
+  username: stagehand
+  password: dev-rabbit-password
+
+keycloak:
+  authority: http://keycloak.identity.svc.cluster.local:8080/realms/stagehand
+  requireHttpsMetadata: false
+  validIssuers:
+    - http://keycloak.identity.svc.cluster.local:8080/realms/stagehand
+    - http://localhost:8081/realms/stagehand
+
+reservations:
+  holdMinutes: 10
+  sweepIntervalSeconds: 30
+
+env:
+  aspnetcoreEnvironment: Production
+
+networkPolicy:
+  enabled: true
+  gatewayNamespace: gateway
+  gatewayName: gateway
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 192Mi
+  limits:
+    memory: 512Mi

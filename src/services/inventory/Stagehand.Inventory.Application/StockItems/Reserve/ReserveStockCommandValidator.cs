@@ -6,6 +6,9 @@ public sealed class ReserveStockCommandValidator : AbstractValidator<ReserveStoc
 {
     public ReserveStockCommandValidator()
     {
+        RuleFor(c => c.ReservationId)
+            .NotEmpty();
+
         RuleFor(c => c.Quantity)
             .GreaterThan(0);
     }

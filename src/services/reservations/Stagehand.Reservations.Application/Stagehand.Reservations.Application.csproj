@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Stagehand.Reservations.Domain\Stagehand.Reservations.Domain.csproj" />
+    <ProjectReference Include="..\..\..\building-blocks\Stagehand.SharedKernel\Stagehand.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\..\building-blocks\Stagehand.SharedKernel.Application\Stagehand.SharedKernel.Application.csproj" />
+  </ItemGroup>
+
+</Project>

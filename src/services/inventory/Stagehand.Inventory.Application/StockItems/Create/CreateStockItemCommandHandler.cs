@@ -20,6 +20,13 @@ internal sealed class CreateStockItemCommandHandler
 
     public async Task<Result<StockItemId>> Handle(CreateStockItemCommand command, CancellationToken cancellationToken)
     {
+        var existing = await _stockItemRepository.GetByListingAsync(command.ListingId, cancellationToken);
+
+        if (existing is not null)
+        {
+            return Result.Failure<StockItemId>(StockItemErrors.AlreadyExistsForListing(command.ListingId));
+        }
+
         var stockItem = StockItem.Create(command.ListingId, command.TotalQuantity);
 
         _stockItemRepository.Add(stockItem);
